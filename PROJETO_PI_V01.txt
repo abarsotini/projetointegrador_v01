@@ -1,0 +1,172 @@
+////////////////////////////////////////////////
+// PROJETO INTEGRADOR 2021
+// ARMANDO BARSOTINI NETO - RA RA: 1630792112002
+// MECATRONICA INDUSTRIAL - 2º PERIODO - 
+// PROF. MARCIO RODRIGUES SABINO
+////////////////////////////////////////////////
+
+#include <VarSpeedServo.h> 
+ 
+VarSpeedServo ServoBAS;   // SERVO MOTOR BASE
+VarSpeedServo ServoDIR;   // SERVO MOTOR DIREITO
+VarSpeedServo ServoESQ;   // SERVO MOTOR ESQUERDO
+VarSpeedServo ServoGAR;   // SERVO MOTOR GARRA
+
+const int servoPino4 = 4;   //PINO DIGITAL 4 ARDUINO
+const int servoPino5 = 5;   //PINO DIGITAL 5 ARDUINO
+const int servoPino6 = 6;   //PINO DIGITAL 6 ARDUINO
+const int servoPino7 = 7;   //PINO DIGITAL 7 ARDUINO
+
+const int s0 = 8;     //PINO DIGITAL 8 ARDUINO
+const int s1 = 9;     //PINO DIGITAL 9 ARDUINO
+const int s2 = 12;    //PINO DIGITAL 12 ARDUINO
+const int s3 = 11;    //PINO DIGITAL 11 ARDUINO
+const int out = 10;   //PINO DIGITAL 10 ARDUINO
+
+
+//VARIAVEIS PARA CORES
+int red = 0;
+int bck = 0;
+int cor = 0;
+ 
+void setup() { 
+  
+  ServoBAS.attach(servoPino4);  
+  ServoDIR.attach(servoPino5); 
+  ServoESQ.attach(servoPino6);
+  ServoGAR.attach(servoPino7);
+  
+  pinMode(s2, OUTPUT);    //SENSOR DE COR PINO S2
+  pinMode(s3, OUTPUT);    //SENSOR DE COR PINO S3
+  pinMode(out, INPUT);    //SENSOR DE COR PINO OUT
+  Serial.begin(9600);     //PORTA SERIAL
+  
+  FInicio(); //INICIALIZA BRAÇO
+
+} 
+
+void loop() {
+
+  FPegaPeca();
+  FMoverSensorCor();
+  FEntregaPeca();
+  
+}
+
+void FPegaPeca() {
+  
+  ServoBAS.slowmove(140,40);
+  ServoGAR.slowmove(100,100);
+  ServoDIR.slowmove(150,100);
+  ServoGAR.slowmove(120,100);
+  ServoDIR.slowmove(100,30);
+  ServoBAS.slowmove(100,40);
+  delay(1000);
+  
+}
+
+void FEntregaPeca(){
+  
+  Serial.println("DECIDE:");
+  Serial.println(cor);
+  
+  if (cor==0)
+  {
+      Serial.println("POTE PRETO");
+      ServoBAS.slowmove(80,100);
+      ServoDIR.slowmove(150,100);
+      ServoGAR.slowmove(100,100);
+      ServoDIR.slowmove(100,100);
+      ServoBAS.slowmove(100,100);
+      delay(4000);       
+  }
+   else if (cor==1)
+  {
+      Serial.println("POTE VERMELHO");
+      ServoBAS.slowmove(60,100);
+      ServoDIR.slowmove(150,100);
+      ServoGAR.slowmove(100,100);
+      ServoDIR.slowmove(100,100);
+      ServoBAS.slowmove(100,100);
+      delay(4000);
+  }
+  
+}
+
+
+void FMoverSensorCor() {
+  
+  ServoDIR.slowmove(80,30);
+  ServoBAS.slowmove(180,100);
+  delay(2000);
+  
+  FCor(); //CHAMA FUNCAO PARA VERIFICAR A COR 
+  
+  if (red < bck && red < 100)
+  {
+    Serial.println("Vermelho");
+    cor = 1;
+    Serial.println(cor);
+  }
+ 
+  //VERIFICA SE A COR AZUL FOI DETECTADA
+  else if (bck < red && bck < 1000)
+  {
+    Serial.println("Preto");
+    cor = 0;
+    Serial.println(cor);
+  }
+  
+  delay(2000);
+  ServoBAS.slowmove(100,100);
+  ServoDIR.slowmove(100,30);
+  delay(2000);
+}
+
+void FInicio() {
+  ServoBAS.slowmove(100,130);
+  ServoDIR.slowmove(100,130);
+  ServoESQ.slowmove(150,130);
+  ServoGAR.slowmove(110,130);
+  delay(4000); 
+}
+
+
+void FCor()
+{
+  //LEITURA DE VALORES DAS CORES
+  //digitalWrite(led, LOW);
+  digitalWrite(s2, LOW);
+  digitalWrite(s3, LOW);
+  
+  //COTAGEM OUT, pRed, RED - VERMELHO
+  red = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  digitalWrite(s3, HIGH);
+  
+  //CONTAGEM OUT, pBck, BLACK - PRETO 
+  bck = pulseIn(out, digitalRead(out) == HIGH ? LOW : HIGH);
+  digitalWrite(s2, HIGH);
+}
+
+
+
+// FUNCAO PARA TESTES DE MOVIMENTO
+void FTeste() {
+  //TESTE SERVO BASE
+  //ServoBAS.slowmove(130,40); 
+  //delay(2000);
+  //ServoBAS.slowmove(70,40);  
+  //delay(2000);
+  
+  //TESTE SERVO DIREITO
+  //ServoDIR.slowmove(100,40); 
+  //delay(2000);
+  //ServoDIR.slowmove(150,40);  
+  //delay(2000);
+  
+  //TESTE SERVO ESQUERDO
+  //ServoESQ.slowmove(150,40); 
+  //delay(2000);
+  //ServoESQ.slowmove(110,40);  
+  //delay(2000);
+}
